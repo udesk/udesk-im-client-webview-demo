@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   version = "1.3">
+   <BuildAction>
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForRunning = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E55AEAA62B70EC83B68510E9"
+               BuildableName = "udesk-im-client-webview-demo.app"
+               BlueprintName = "udesk-im-client-webview-demo"
+               ReferencedContainer = "container:udesk-im-client-webview-demo.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <LaunchAction
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Debug"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E55AEAA62B70EC83B68510E9"
+            BuildableName = "udesk-im-client-webview-demo.app"
+            BlueprintName = "udesk-im-client-webview-demo"
+            ReferencedContainer = "container:udesk-im-client-webview-demo.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+</Scheme>
