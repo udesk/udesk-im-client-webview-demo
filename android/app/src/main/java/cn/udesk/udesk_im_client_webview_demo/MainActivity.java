@@ -1,0 +1,172 @@
+package cn.udesk.udesk_im_client_webview_demo;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.net.Uri;
+import android.net.http.SslError;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.Window;
+import android.webkit.DownloadListener;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
+
+public class MainActivity extends AppCompatActivity {
+    private WebView mwebView;
+    UdeskWebChromeClient udeskWebChromeClient;
+    private String url;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        if (getIntent() != null) {
+//            url = getIntent().getStringExtra("url");
+            url = "https://udesk.udesk.cn/im_client/?language=zh-cn";
+        }
+        initViews();
+    }
+
+    private void initViews() {
+        try {
+            udeskWebChromeClient = new UdeskWebChromeClient(this, new ICloseWindow() {
+                @Override
+                public void closeActivty() {
+                    finish();
+                }
+            });
+            mwebView = (WebView) findViewById(R.id.webview);
+            initPermission();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void initPermission() {
+        //检查权限
+        String[] permissions = FileUtil.checkPermission(this);
+        if (permissions.length == 0) {
+            //权限都申请了
+            settingWebView(url);
+        } else {
+            //申请权限
+            ActivityCompat.requestPermissions(this, permissions, 100);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        //测试授权  具体授权完善
+        settingWebView(url);
+    }
+
+
+    @SuppressLint("NewApi")
+    private void settingWebView(String url) {
+
+        //支持获取手势焦点，输入用户名、密码或其他
+        mwebView.requestFocusFromTouch();
+        mwebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+        mwebView.setScrollbarFadingEnabled(false);
+
+        final WebSettings settings = mwebView.getSettings();
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setJavaScriptEnabled(true);  //支持js
+        //  设置自适应屏幕，两者合用
+        settings.setUseWideViewPort(true); //将图片调整到适合webview的大小
+        settings.setLoadWithOverviewMode(true); // 缩放至屏幕的大小
+
+        //若setSupportZoom是false，则该WebView不可缩放，这个不管设置什么都不能缩放。
+        settings.setSupportZoom(true);  //支持缩放，默认为true。是setBuiltInZoomControls的前提。
+        settings.setBuiltInZoomControls(true); //设置内置的缩放控件。
+        settings.supportMultipleWindows();  //多窗口
+
+        settings.setAllowFileAccess(true);  //设置可以访问文件
+        settings.setNeedInitialFocus(true); //当webview调用requestFocus时为webview设置节点
+
+        settings.setJavaScriptCanOpenWindowsAutomatically(true); //支持通过JS打开新窗口
+        //设置编码格式
+        settings.setDefaultTextEncodingName("UTF-8");
+        // 关于是否缩放
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            settings.setDisplayZoomControls(false);
+        }
+        /**
+         *  Webview在安卓5.0之前默认允许其加载混合网络协议内容
+         *  在安卓5.0之后，默认不允许加载http与https混合内容，需要设置webview允许其加载混合网络协议内容
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+
+        }
+        settings.setLoadsImagesAutomatically(true);  //支持自动加载图片
+
+        settings.setDomStorageEnabled(true); //开启DOM Storage
+
+        mwebView.setDownloadListener((url1, userAgent, contentDisposition, mimetype, contentLength) -> {
+            // 监听下载功能，当用户点击下载链接的时候，直接调用系统的浏览器来下载
+            Uri uri = Uri.parse(url1);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        });
+
+        mwebView.setWebChromeClient(udeskWebChromeClient);
+        mwebView.setWebViewClient(new WebViewClient() {
+
+//            @Override
+//            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+//                MainActivity.this.finish();
+//            }
+
+//            @Override
+//            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+////                super.onReceivedSslError(view, handler, error);
+//                handler.proceed();
+//            }
+
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//                startActivity(intent);
+////                view.loadUrl(url);
+//                return true;
+//            }
+        });
+        mwebView.loadUrl(url);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        udeskWebChromeClient.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            mwebView.removeAllViews();
+            mwebView.destroy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
